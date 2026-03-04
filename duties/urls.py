@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('areas/',              views.duty_area_list,   name='duty_area_list'),
+    path('summary/', views.allocation_summary, name='allocation_summary'),
     path('areas/add/',          views.duty_area_create, name='duty_area_create'),
     path('areas/<int:pk>/edit/', views.duty_area_update, name='duty_area_update'),
     path('allocate/',           views.allocate_view,    name='allocate'),
@@ -10,4 +11,6 @@ urlpatterns = [
     path('swaps/',              views.swap_list,         name='swap_list'),
     path('swaps/request/',      views.swap_request,      name='swap_request'),
     path('swaps/<int:pk>/review/', views.swap_review,   name='swap_review'),
+    path('areas/import/',          views.duty_area_import,    name='duty_area_import'),
+    path('areas/import/template/', views.duty_import_template, name='duty_import_template'),
 ]

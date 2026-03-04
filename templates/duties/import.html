@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}Import Duty Areas{% endblock %}
+{% block page_title %}Import Duty Areas{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+  <!-- Upload Form -->
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3">
+        <i class="bi bi-upload me-2"></i>Upload File
+      </h6>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Select File</label>
+          <input type="file" name="import_file"
+                 class="form-control" accept=".xlsx,.csv" required>
+          <div class="form-text">Supported formats: .xlsx and .csv</div>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-upload me-1"></i> Import
+          </button>
+          <a href="{% url 'duty_import_template' %}"
+             class="btn btn-outline-secondary">
+            <i class="bi bi-download me-1"></i> Download Template
+          </a>
+          <a href="{% url 'duty_area_list' %}"
+             class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Instructions -->
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3">
+        <i class="bi bi-info-circle me-2"></i>Column Guide
+      </h6>
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Column</th>
+            <th>Required</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>label</code></td><td>✅</td><td>NHS-DH</td></tr>
+          <tr><td><code>name</code></td><td>✅</td><td>Dining Hall</td></tr>
+          <tr><td><code>area_size</code></td><td>No</td><td>small/medium/large</td></tr>
+          <tr><td><code>is_heavy</code></td><td>No</td><td>yes/no</td></tr>
+          <tr><td><code>students_required</code></td><td>No</td><td>5</td></tr>
+          <tr><td><code>specialization</code></td><td>No</td><td>none/form/dorm</td></tr>
+          <tr><td><code>specific_form</code></td><td>No</td><td>Form 1</td></tr>
+          <tr><td><code>specific_dorm</code></td><td>No</td><td>Uhuru Dorm</td></tr>
+          <tr><td><code>tools_required</code></td><td>No</td><td>Mops, Brooms</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Results -->
+{% if result %}
+<div class="row mt-4">
+  <div class="col-md-12">
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3">
+        <i class="bi bi-clipboard-check me-2"></i>Import Results
+      </h6>
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <div class="stat-card" style="border-color:#28a745">
+            <div class="number">{{ result.success }}</div>
+            <div class="label">New Duty Areas</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card" style="border-color:#0d6efd">
+            <div class="number">{{ result.updated }}</div>
+            <div class="label">Updated</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card" style="border-color:#dc3545">
+            <div class="number">{{ result.errors|length }}</div>
+            <div class="label">Errors</div>
+          </div>
+        </div>
+      </div>
+
+      {% if result.errors %}
+      <div class="alert alert-danger">
+        <strong>Errors:</strong>
+        <ul class="mb-0 mt-2">
+          {% for err in result.errors %}
+          <li>{{ err }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <a href="{% url 'duty_area_list' %}" class="btn btn-primary mt-2">
+        <i class="bi bi-list me-1"></i> View Duty Areas
+      </a>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
