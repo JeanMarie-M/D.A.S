@@ -1,163 +1,246 @@
 """
 Duty Allocation Engine
-Core logic for assigning duties to students fairly and correctly.
+Assigns ALL eligible students to duties every rotation.
+Students are distributed fairly across duty areas.
 """
 from .models import DutyArea, DutyAssignment, DutyHistory
 from students.models import Student
 from django.db import transaction
+import math
 
 
 def get_eligible_students(school, term):
-    """Returns all students eligible for duty allocation"""
-    return Student.objects.filter(
+    return list(Student.objects.filter(
         school=school,
         status=Student.STATUS_ACTIVE
-    ).select_related('current_class', 'current_class__form', 'dorm')
+    ).select_related('current_class', 'current_class__form', 'dorm'))
 
 
-def get_duty_history(school, term, student):
-    """Returns list of duty area IDs student has had this term"""
-    return list(
-        DutyHistory.objects.filter(
-            school=school,
-            term=term,
-            student=student
-        ).values_list('duty_area_id', flat=True)
-    )
-
-
-def get_candidate_students(duty_area, eligible_students, assigned_ids):
+def get_history_counts(school, term, students):
     """
-    Returns ordered list of candidate students for a duty area.
-    Priority:
-      1. Same class as duty area specialization
-      2. Same form
-      3. Same dorm
-      4. Any eligible student
-    Excludes already assigned students.
+    Returns a dict: {student_id: {duty_area_id: count}}
+    Used to prioritize students who have done fewer duties.
     """
-    available = [s for s in eligible_students if s.id not in assigned_ids]
+    history = DutyHistory.objects.filter(
+        school=school,
+        term=term,
+        student__in=students
+    ).values('student_id', 'duty_area_id')
 
-    if duty_area.specialization == 'class' and duty_area.specific_class:
-        priority = [s for s in available if s.current_class == duty_area.specific_class]
-        fallback = [s for s in available if s.current_class != duty_area.specific_class]
-        return priority + fallback
-
-    elif duty_area.specialization == 'form' and duty_area.specific_form:
-        priority = [s for s in available if s.form == duty_area.specific_form]
-        fallback = [s for s in available if s.form != duty_area.specific_form]
-        return priority + fallback
-
-    elif duty_area.specialization == 'dorm' and duty_area.specific_dorm:
-        priority = [s for s in available if s.dorm == duty_area.specific_dorm]
-        fallback = [s for s in available if s.dorm != duty_area.specific_dorm]
-        return priority + fallback
-
-    return available
-
-
-def sort_by_duty_history(candidates, school, term):
-    """
-    Sort candidates so students with LEAST duty history come first.
-    This ensures fair rotation — no student repeats a duty
-    before others have had it.
-    """
-    def history_count(student):
-        return DutyHistory.objects.filter(
-            school=school,
-            term=term,
-            student=student
-        ).count()
-
-    return sorted(candidates, key=history_count)
+    counts = {}
+    for h in history:
+        sid  = h['student_id']
+        did  = h['duty_area_id']
+        if sid not in counts:
+            counts[sid] = {}
+        counts[sid][did] = counts[sid].get(did, 0) + 1
+    return counts
 
 
 @transaction.atomic
 def allocate_duties(school, term, rotation, assigned_by):
     """
-    Main allocation function.
-    Assigns all duty areas for a given rotation period.
-    Returns a summary dict with results and any warnings.
+    Assigns ALL eligible students to duties.
+    - Every student gets exactly one duty per rotation
+    - Students are distributed fairly across areas
+    - Specialization (form/dorm) is respected where possible
+    - Students who have done fewer duties are prioritized
     """
     summary = {
-        'assigned':  [],
-        'warnings':  [],
+        'assigned':         [],
+        'warnings':         [],
         'unassigned_areas': [],
+        'areas':            0,
     }
 
     # Clear existing assignments for this rotation
     DutyAssignment.objects.filter(
-        school=school,
-        term=term,
-        rotation=rotation
+        school=school, term=term, rotation=rotation
+    ).delete()
+    DutyHistory.objects.filter(
+        school=school, term=term, rotation=rotation
     ).delete()
 
-    eligible_students = list(get_eligible_students(school, term))
-    duty_areas        = DutyArea.objects.filter(school=school, is_active=True)
-    assigned_ids      = set()  # tracks students already assigned this rotation
+    eligible_students = get_eligible_students(school, term)
+    total_students    = len(eligible_students)
+
+    if total_students == 0:
+        summary['warnings'].append("No eligible students found.")
+        return summary
+
+    duty_areas = list(DutyArea.objects.filter(school=school, is_active=True))
+
+    if not duty_areas:
+        summary['warnings'].append("No active duty areas found.")
+        return summary
+
+    total_areas = len(duty_areas)
+
+    # ── STEP 1: Calculate how many students each area gets ────
+    # Base each area on its students_required, then scale up
+    # so ALL students are assigned
+    base_total = sum(a.students_required for a in duty_areas)
+
+    # Build slot counts per area scaled to total students
+    area_slots = {}
+    if base_total == 0:
+        # Equal distribution if no requirements set
+        per_area = math.ceil(total_students / total_areas)
+        for area in duty_areas:
+            area_slots[area.id] = per_area
+    else:
+        # Scale proportionally so total slots >= total students
+        scale = total_students / base_total
+        assigned_slots = 0
+        for i, area in enumerate(duty_areas):
+            if i == len(duty_areas) - 1:
+                # Last area gets remainder
+                area_slots[area.id] = total_students - assigned_slots
+            else:
+                slots = max(1, round(area.students_required * scale))
+                area_slots[area.id] = slots
+                assigned_slots += slots
+
+    # ── STEP 2: Get duty history for fair rotation ────────────
+    history_counts = get_history_counts(school, term, eligible_students)
+
+    # ── STEP 3: Sort students by total duty count (least first) ─
+    def total_duty_count(student):
+        return sum(history_counts.get(student.id, {}).values())
+
+    eligible_students.sort(key=total_duty_count)
+
+    # ── STEP 4: Build priority queues per area ────────────────
+    # Each area gets a prioritized list of students
+    area_queues = {}
+    for area in duty_areas:
+        candidates = eligible_students.copy()
+
+        # Sort: prefer students who haven't done THIS area recently
+        def area_priority(student):
+            area_history = history_counts.get(student.id, {}).get(area.id, 0)
+            total_history = total_duty_count(student)
+            return (area_history, total_history)
+
+        candidates.sort(key=area_priority)
+
+        # Move specialization matches to front
+        if area.specialization == 'form' and area.specific_form:
+            priority = [s for s in candidates
+                        if hasattr(s, 'current_class') and
+                        s.current_class and
+                        s.current_class.form == area.specific_form]
+            others   = [s for s in candidates
+                        if s not in priority]
+            candidates = priority + others
+
+        elif area.specialization == 'dorm' and area.specific_dorm:
+            priority = [s for s in candidates if s.dorm == area.specific_dorm]
+            others   = [s for s in candidates if s not in priority]
+            candidates = priority + others
+
+        elif area.specialization == 'class' and area.specific_class:
+            priority = [s for s in candidates
+                        if s.current_class == area.specific_class]
+            others   = [s for s in candidates if s not in priority]
+            candidates = priority + others
+
+        area_queues[area.id] = candidates
+
+    # ── STEP 5: Assign students to areas ─────────────────────
+    assigned_student_ids = set()
+    assignments_to_create = []
+    history_to_create     = []
 
     for area in duty_areas:
-        # Get candidates for this duty area
-        candidates = get_candidate_students(area, eligible_students, assigned_ids)
+        slots    = area_slots[area.id]
+        queue    = area_queues[area.id]
+        assigned = 0
 
-        # Sort by least duty history first (fairness rotation)
-        candidates = sort_by_duty_history(candidates, school, term)
-
-        # Filter out students who already had THIS specific duty this term
-        fresh_candidates = [
-            s for s in candidates
-            if area.id not in get_duty_history(school, term, s)
-        ]
-
-        # Fallback to any candidate if all have had this duty
-        if not fresh_candidates:
-            fresh_candidates = candidates
-            summary['warnings'].append(
-                f"All eligible students have had '{area}' before. Repeating."
-            )
-
-        # Assign required number of students
-        assigned_count = 0
-        for student in fresh_candidates:
-            if assigned_count >= area.students_required:
+        for student in queue:
+            if assigned >= slots:
                 break
-            if student.id in assigned_ids:
+            if student.id in assigned_student_ids:
                 continue
 
-            # Create assignment
-            DutyAssignment.objects.create(
-                school=school,
-                term=term,
-                student=student,
-                duty_area=area,
-                rotation=rotation,
-                method='auto',
-                assigned_by=assigned_by,
-            )
+            assignments_to_create.append(DutyAssignment(
+                school      = school,
+                term        = term,
+                student     = student,
+                duty_area   = area,
+                rotation    = rotation,
+                method      = 'auto',
+                assigned_by = assigned_by,
+            ))
+            history_to_create.append(DutyHistory(
+                school    = school,
+                student   = student,
+                duty_area = area,
+                term      = term,
+                rotation  = rotation,
+            ))
 
-            # Record in history
-            DutyHistory.objects.create(
-                school=school,
-                student=student,
-                duty_area=area,
-                term=term,
-                rotation=rotation,
-            )
-
-            assigned_ids.add(student.id)
-            assigned_count += 1
+            assigned_student_ids.add(student.id)
+            assigned += 1
             summary['assigned'].append(f"{student} → {area}")
 
-        if assigned_count < area.students_required:
-            summary['unassigned_areas'].append(
-                f"{area} needs {area.students_required}, got {assigned_count}"
+        if assigned < area.students_required:
+            summary['warnings'].append(
+                f"{area.name} needs {area.students_required}, got {assigned}."
             )
 
-    # Warn about students who were not assigned any duty
-    unassigned_students = [
-        s for s in eligible_students if s.id not in assigned_ids
-    ]
-    for s in unassigned_students:
-        summary['warnings'].append(f"{s} was NOT assigned any duty.")
+        summary['areas'] += 1
+
+    # ── STEP 6: Handle any unassigned students ────────────────
+    # (Can happen due to rounding — assign to areas with most capacity)
+    unassigned = [s for s in eligible_students
+                  if s.id not in assigned_student_ids]
+
+    if unassigned:
+        # Sort areas by current load (least loaded first)
+        area_load = {a.id: 0 for a in duty_areas}
+        for assignment in assignments_to_create:
+            area_load[assignment.duty_area_id] += 1
+
+        sorted_areas = sorted(duty_areas, key=lambda a: area_load[a.id])
+
+        area_idx = 0
+        for student in unassigned:
+            area = sorted_areas[area_idx % len(sorted_areas)]
+            assignments_to_create.append(DutyAssignment(
+                school      = school,
+                term        = term,
+                student     = student,
+                duty_area   = area,
+                rotation    = rotation,
+                method      = 'auto',
+                assigned_by = assigned_by,
+            ))
+            history_to_create.append(DutyHistory(
+                school    = school,
+                student   = student,
+                duty_area = area,
+                term      = term,
+                rotation  = rotation,
+            ))
+            assigned_student_ids.add(student.id)
+            summary['assigned'].append(
+                f"{student} → {area} (overflow)"
+            )
+            area_load[area.id] += 1
+            area_idx += 1
+            summary['warnings'].append(
+                f"{student} assigned to {area} as overflow."
+            )
+
+    # ── STEP 7: Bulk save ─────────────────────────────────────
+    DutyAssignment.objects.bulk_create(assignments_to_create)
+    DutyHistory.objects.bulk_create(history_to_create)
+
+    # Final check
+    unassigned_final = [s for s in eligible_students
+                        if s.id not in assigned_student_ids]
+    for s in unassigned_final:
+        summary['warnings'].append(f"⚠️ {s} was NOT assigned any duty!")
 
     return summary
