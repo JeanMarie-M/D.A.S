@@ -21,10 +21,10 @@ from django.conf.urls.static import static
 from django.contrib.auth.decorators import user_passes_test
 
 # Restrict admin to superadmin only
-admin.site.login = user_passes_test(
+admin.site.login = (user_passes_test(
     lambda u: u.is_active and u.is_staff and hasattr(u, 'role') and u.role == 'superadmin',
-    login_url='/login/'
-)(admin.site.login)
+    login_url='/login/')
+                    (admin.site.login))
 
 urlpatterns = [
     path('admin/',    admin.site.urls),
