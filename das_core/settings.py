@@ -9,6 +9,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-ops@((dt^^c3)t75q_8!0
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS += ['.railway.app', '.up.railway.app']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
