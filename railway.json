@@ -5,7 +5,7 @@
   },
   "deploy": {
     "startCommand": "gunicorn das_core.wsgi --log-file -",
-    "healthcheckPath": "/",
+    "healthcheckPath": "/login/",
     "restartPolicyType": "ON_FAILURE"
   }
 }
