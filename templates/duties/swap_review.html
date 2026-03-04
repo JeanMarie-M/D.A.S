@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Review Swap{% endblock %}
+{% block page_title %}Review Swap Request{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h5 class="fw-bold mb-4">
+        <i class="bi bi-arrow-left-right me-2 text-warning"></i>Swap Details
+      </h5>
+
+      <table class="table table-borderless table-sm mb-4">
+        <tr>
+          <td class="text-muted">From Student</td>
+          <td><strong>{{ swap.from_student.get_full_name }}</strong></td>
+        </tr>
+        <tr>
+          <td class="text-muted">To Student</td>
+          <td><strong>{{ swap.to_student.get_full_name }}</strong></td>
+        </tr>
+        <tr>
+          <td class="text-muted">From Duty</td>
+          <td><strong>{{ swap.from_duty }}</strong></td>
+        </tr>
+        <tr>
+          <td class="text-muted">To Duty</td>
+          <td><strong>{{ swap.to_duty }}</strong></td>
+        </tr>
+        <tr>
+          <td class="text-muted">Reason</td>
+          <td>{{ swap.reason }}</td>
+        </tr>
+        <tr>
+          <td class="text-muted">Requested By</td>
+          <td>{{ swap.requested_by }}</td>
+        </tr>
+      </table>
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Admin Note (optional)</label>
+          <textarea name="admin_note" class="form-control" rows="2"
+                    placeholder="Reason for approval or rejection..."></textarea>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" name="action" value="approve"
+                  class="btn btn-success">
+            <i class="bi bi-check-circle me-1"></i> Approve Swap
+          </button>
+          <button type="submit" name="action" value="reject"
+                  class="btn btn-danger">
+            <i class="bi bi-x-circle me-1"></i> Reject
+          </button>
+          <a href="{% url 'swap_list' %}" class="btn btn-outline-secondary">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

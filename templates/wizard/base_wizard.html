@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup Wizard — DAS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body { background: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+
+    .wizard-header {
+      background: #1a1a2e;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .wizard-header .brand {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #e2b714;
+    }
+    .wizard-header .school {
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .wizard-container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    /* Progress Steps */
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      position: relative;
+    }
+    .progress-steps::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 40px;
+      right: 40px;
+      height: 2px;
+      background: #dee2e6;
+      z-index: 0;
+    }
+    .progress-line {
+      position: absolute;
+      top: 20px;
+      left: 40px;
+      height: 2px;
+      background: #e2b714;
+      z-index: 1;
+      transition: width 0.3s ease;
+    }
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 2;
+      flex: 1;
+    }
+    .step-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #dee2e6;
+      color: #888;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      transition: all 0.3s;
+    }
+    .step-circle.done {
+      background: #28a745;
+      color: white;
+    }
+    .step-circle.active {
+      background: #e2b714;
+      color: #1a1a2e;
+      box-shadow: 0 0 0 4px rgba(226,183,20,0.2);
+    }
+    .step-label {
+      font-size: 0.7rem;
+      color: #888;
+      text-align: center;
+      font-weight: 600;
+    }
+    .step-label.active { color: #1a1a2e; }
+    .step-label.done   { color: #28a745; }
+
+    /* Wizard Card */
+    .wizard-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .wizard-card-header {
+      background: #1a1a2e;
+      color: white;
+      padding: 25px 30px;
+    }
+    .wizard-card-header .step-badge {
+      background: #e2b714;
+      color: #1a1a2e;
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: inline-block;
+    }
+    .wizard-card-header h4 {
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    .wizard-card-header p {
+      color: #aaa;
+      font-size: 0.9rem;
+      margin: 0;
+    }
+    .wizard-card-body { padding: 30px; }
+
+    /* Form styling */
+    .form-label { font-weight: 600; font-size: 0.9rem; }
+    .btn-primary {
+      background: #1a1a2e;
+      border-color: #1a1a2e;
+    }
+    .btn-primary:hover {
+      background: #e2b714;
+      border-color: #e2b714;
+      color: #1a1a2e;
+    }
+
+    /* Added items list */
+    .added-list {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 15px;
+    }
+    .added-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #e9ecef;
+      font-size: 0.9rem;
+    }
+    .added-item:last-child { border-bottom: none; }
+    .added-item i {
+      color: #28a745;
+      margin-right: 10px;
+    }
+
+    /* Skip / Next buttons */
+    .wizard-footer {
+      padding: 20px 30px;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="wizard-header">
+  <div class="brand">
+    <i class="bi bi-clipboard2-check me-2"></i>
+    Duty Allocation System
+  </div>
+  <div class="school">
+    <i class="bi bi-building me-1"></i>
+    {{ request.user.school }}
+  </div>
+</div>
+
+<div class="wizard-container">
+
+  <!-- Progress Steps -->
+  <div class="progress-steps">
+    <div class="progress-line" style="width: calc({{ step }} / 6 * (100% - 80px))"></div>
+
+    {% for s in step_labels %}
+    <div class="step-item">
+      <div class="step-circle
+        {% if s.done %}done
+        {% elif s.number == step %}active
+        {% endif %}">
+        {% if s.done %}
+          <i class="bi bi-check"></i>
+        {% else %}
+          {{ s.number }}
+        {% endif %}
+      </div>
+      <div class="step-label
+        {% if s.done %}done
+        {% elif s.number == step %}active
+        {% endif %}">
+        {{ s.name }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Flash Messages -->
+  {% for msg in messages %}
+  <div class="alert alert-{{ msg.tags }} alert-dismissible fade show mb-4" role="alert">
+    {{ msg|safe }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+
+  <!-- Wizard Card -->
+  <div class="wizard-card">
+    {% block wizard_content %}{% endblock %}
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

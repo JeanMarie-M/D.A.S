@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duty Allocation System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f9;
+    }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      background: #1a1a2e;
+      padding: 15px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .navbar .brand {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #e2b714;
+    }
+    .navbar .brand span { color: white; }
+    .nav-links a {
+      color: #ccc;
+      text-decoration: none;
+      margin-left: 20px;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: #e2b714; }
+    .btn-nav-login {
+      background: #e2b714;
+      color: #1a1a2e !important;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .btn-nav-login:hover {
+      background: white;
+      color: #1a1a2e !important;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 90vh;
+      display: flex;
+      align-items: center;
+      padding: 60px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 600px;
+      height: 600px;
+      background: rgba(226, 183, 20, 0.05);
+      border-radius: 50%;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -10%;
+      width: 400px;
+      height: 400px;
+      background: rgba(226, 183, 20, 0.05);
+      border-radius: 50%;
+    }
+    .hero-content {
+      max-width: 600px;
+      z-index: 1;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(226, 183, 20, 0.15);
+      color: #e2b714;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(226, 183, 20, 0.3);
+    }
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      color: white;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+    .hero h1 span { color: #e2b714; }
+    .hero p {
+      color: #aaa;
+      font-size: 1.1rem;
+      line-height: 1.7;
+      margin-bottom: 35px;
+    }
+    .hero-buttons {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .btn-hero-primary {
+      background: #e2b714;
+      color: #1a1a2e;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-hero-primary:hover {
+      background: white;
+      color: #1a1a2e;
+      transform: translateY(-2px);
+    }
+    .btn-hero-secondary {
+      background: transparent;
+      color: white;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      border: 2px solid rgba(255,255,255,0.2);
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-hero-secondary:hover {
+      border-color: #e2b714;
+      color: #e2b714;
+      transform: translateY(-2px);
+    }
+
+    /* Hero illustration */
+    .hero-illustration {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1;
+    }
+    .hero-illustration .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+    .icon-box {
+      width: 80px;
+      height: 80px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: #e2b714;
+      transition: all 0.3s;
+    }
+    .icon-box:hover {
+      background: rgba(226, 183, 20, 0.15);
+      transform: scale(1.05);
+    }
+    .icon-box.highlight {
+      background: rgba(226, 183, 20, 0.15);
+      border-color: rgba(226, 183, 20, 0.3);
+    }
+
+    /* ── FEATURES ── */
+    .features {
+      padding: 80px 40px;
+      background: white;
+    }
+    .section-label {
+      text-align: center;
+      color: #e2b714;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .section-title {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      margin-bottom: 50px;
+    }
+    .feature-card {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 30px;
+      height: 100%;
+      border-left: 4px solid #e2b714;
+      transition: all 0.2s;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+    .feature-card .icon {
+      width: 50px;
+      height: 50px;
+      background: #1a1a2e;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #e2b714;
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+    }
+    .feature-card h5 {
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 10px;
+    }
+    .feature-card p {
+      color: #888;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how-it-works {
+      padding: 80px 40px;
+      background: #f4f6f9;
+    }
+    .step-card {
+      text-align: center;
+      padding: 30px 20px;
+    }
+    .step-number {
+      width: 50px;
+      height: 50px;
+      background: #1a1a2e;
+      color: #e2b714;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+      margin: 0 auto 15px;
+    }
+    .step-card h5 {
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+    }
+    .step-card p {
+      color: #888;
+      font-size: 0.88rem;
+    }
+
+    /* ── CTA ── */
+    .cta {
+      background: linear-gradient(135deg, #1a1a2e, #0f3460);
+      padding: 80px 40px;
+      text-align: center;
+      color: white;
+    }
+    .cta h2 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 15px;
+    }
+    .cta p {
+      color: #aaa;
+      font-size: 1rem;
+      margin-bottom: 35px;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      background: #1a1a2e;
+      color: #666;
+      text-align: center;
+      padding: 20px;
+      font-size: 0.85rem;
+      border-top: 1px solid #333;
+    }
+    .footer span { color: #e2b714; }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="brand">
+    <i class="bi bi-clipboard2-check"></i>
+    <span> Duty Allocation System</span>
+  </div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="{% url 'login' %}">Login</a>
+    <a href="{% url 'school_register' %}" class="btn-nav-login">
+      Register School
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <i class="bi bi-building me-1"></i> For Kenyan Boarding Schools
+    </div>
+    <h1>Smart <span>Duty Allocation</span> for Modern Schools</h1>
+    <p>
+      Automate student duty assignments, manage rotations fairly,
+      generate instant reports and eliminate the manual roster chaos —
+      all in one system built for Kenyan boarding high schools.
+    </p>
+    <div class="hero-buttons">
+      <a href="{% url 'school_register' %}" class="btn-hero-primary">
+        <i class="bi bi-building-add"></i> Register Your School
+      </a>
+      <a href="{% url 'login' %}" class="btn-hero-secondary">
+        <i class="bi bi-box-arrow-in-right"></i> Login
+      </a>
+    </div>
+  </div>
+
+  <div class="hero-illustration d-none d-lg-flex">
+    <div class="icon-grid">
+      <div class="icon-box highlight"><i class="bi bi-people"></i></div>
+      <div class="icon-box"><i class="bi bi-calendar3"></i></div>
+      <div class="icon-box"><i class="bi bi-map"></i></div>
+      <div class="icon-box"><i class="bi bi-lightning"></i></div>
+      <div class="icon-box highlight"><i class="bi bi-clipboard2-check"></i></div>
+      <div class="icon-box"><i class="bi bi-printer"></i></div>
+      <div class="icon-box"><i class="bi bi-arrow-left-right"></i></div>
+      <div class="icon-box"><i class="bi bi-file-earmark-text"></i></div>
+      <div class="icon-box highlight"><i class="bi bi-building"></i></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-label">Features</div>
+    <div class="section-title">Everything You Need</div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="icon"><i class="bi bi-lightning"></i></div>
+          <h5>Auto Duty Allocation</h5>
+          <p>Automatically assign duties to all eligible students based on class,
+             dorm, form and specialization with fair rotation logic.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="icon"><i class="bi bi-arrow-left-right"></i></div>
+          <h5>Duty Swap System</h5>
+          <p>Students can request duty swaps. Admins review and approve
+             with a full audit trail of every change made.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="icon"><i class="bi bi-file-earmark-text"></i></div>
+          <h5>Instant Reports</h5>
+          <p>Generate duty rosters by class, dorm, area or full school.
+             Print-ready with signature lines for prefects and teachers.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="icon"><i class="bi bi-upload"></i></div>
+          <h5>Spreadsheet Import</h5>
+          <p>Bulk import students from Excel or CSV files. The system
+             validates every row and reports errors before saving.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="icon"><i class="bi bi-building"></i></div>
+          <h5>Multi-School Support</h5>
+          <p>Each school registers independently and manages their own
+             data. Schools never see each other's information.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="icon"><i class="bi bi-shield-check"></i></div>
+          <h5>Role-Based Access</h5>
+          <p>Admins have full control. Prefects have limited access.
+             Sensitive actions require admin approval and are fully logged.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-it-works" id="how-it-works">
+  <div class="container">
+    <div class="section-label">Process</div>
+    <div class="section-title">How It Works</div>
+    <div class="row g-4">
+      <div class="col-md-3">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h5>Register School</h5>
+          <p>Sign up your school and create your admin account in minutes.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h5>Setup Data</h5>
+          <p>Add classes, dorms, students and duty areas for your school.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h5>Run Allocation</h5>
+          <p>Click one button to auto-assign all duties fairly and instantly.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <h5>Print Reports</h5>
+          <p>Generate and print duty rosters for classes, dorms and the whole school.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="container">
+    <h2>Ready to Simplify Duty Management?</h2>
+    <p>Join schools already using the Duty Allocation System.</p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <a href="{% url 'school_register' %}" class="btn-hero-primary">
+        <i class="bi bi-building-add me-2"></i> Register Your School
+      </a>
+      <a href="{% url 'login' %}" class="btn-hero-secondary">
+        <i class="bi bi-box-arrow-in-right me-2"></i> Login
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>© 2025 <span>Duty Allocation System</span> — Built for Kenyan Boarding Schools</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

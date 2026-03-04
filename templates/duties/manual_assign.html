@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Manual Assign{% endblock %}
+{% block page_title %}Manual Duty Assignment{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card p-4">
+      <div class="alert alert-warning small">
+        <i class="bi bi-shield-lock me-2"></i>
+        <strong>Admin Only:</strong> Manual assignments override auto-allocation.
+        Use with caution.
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+          <div class="text-danger small">{{ field.errors }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save me-1"></i> Assign
+          </button>
+          <a href="{% url 'duty_area_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-x me-1"></i> Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

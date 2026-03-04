@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["python311", "postgresql"]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt"]
+
+[phases.build]
+cmds = [
+  "python manage.py collectstatic --noinput",
+  "python manage.py migrate"
+]
+
+[start]
+cmd = "gunicorn das_core.wsgi --log-file -"

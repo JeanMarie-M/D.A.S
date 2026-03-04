@@ -1,0 +1,55 @@
+{% extends 'wizard/base_wizard.html' %}
+{% block wizard_content %}
+
+<div class="wizard-card-header">
+  <div class="step-badge">Step 3 of 6</div>
+  <h4><i class="bi bi-journal-text me-2"></i>Add Classes</h4>
+  <p>Add class streams e.g. Form 1K, Form 2E, Form 3N.</p>
+</div>
+
+<div class="wizard-card-body">
+  <div class="row g-4">
+    <div class="col-md-6">
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+          <div class="text-danger small">{{ field.errors }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="bi bi-plus me-1"></i> Add Class
+        </button>
+      </form>
+    </div>
+    <div class="col-md-6">
+      <h6 class="fw-bold mb-3">Added Classes</h6>
+      <div class="added-list">
+        {% for c in existing %}
+        <div class="added-item">
+          <i class="bi bi-check-circle-fill"></i>{{ c }}
+        </div>
+        {% empty %}
+        <div class="text-muted small">No classes added yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wizard-footer">
+  <a href="{% url 'wizard_forms' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i> Back
+  </a>
+  {% if existing %}
+  <a href="{% url 'wizard_classes' %}?next=1" class="btn btn-primary">
+    Next: Add Dorms <i class="bi bi-arrow-right ms-1"></i>
+  </a>
+  {% endif %}
+</div>
+
+{% endblock %}

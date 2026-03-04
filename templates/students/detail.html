@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}{{ student.get_full_name }}{% endblock %}
+{% block page_title %}Student Profile{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+  <!-- Profile Card -->
+  <div class="col-md-4">
+    <div class="card p-4 text-center">
+      <div class="mb-3">
+        <div style="width:80px;height:80px;background:#1a1a2e;border-radius:50%;
+                    display:flex;align-items:center;justify-content:center;
+                    margin:0 auto;font-size:2rem;color:#e2b714;">
+          <i class="bi bi-person"></i>
+        </div>
+      </div>
+      <h5 class="fw-bold mb-0">{{ student.get_full_name }}</h5>
+      <p class="text-muted small mb-2">{{ student.admission_number }}</p>
+
+      {% if student.status == 'active' %}
+        <span class="badge bg-success">Active</span>
+      {% elif student.status == 'prefect' %}
+        <span class="badge bg-warning text-dark">Prefect</span>
+      {% elif student.status == 'medical' %}
+        <span class="badge bg-danger">Medical Exemption</span>
+      {% elif student.status == 'absent' %}
+        <span class="badge bg-secondary">Absent</span>
+      {% else %}
+        <span class="badge bg-dark">Inactive</span>
+      {% endif %}
+
+      <hr>
+      <table class="table table-sm table-borderless text-start">
+        <tr>
+          <td class="text-muted">Class</td>
+          <td><strong>{{ student.current_class }}</strong></td>
+        </tr>
+        <tr>
+          <td class="text-muted">Dorm</td>
+          <td><strong>{{ student.dorm|default:"—" }}</strong></td>
+        </tr>
+        <tr>
+          <td class="text-muted">Form</td>
+          <td><strong>{{ student.form }}</strong></td>
+        </tr>
+        <tr>
+          <td class="text-muted">Admitted</td>
+          <td><strong>{{ student.date_admitted }}</strong></td>
+        </tr>
+        <tr>
+          <td class="text-muted">School</td>
+          <td><strong>{{ student.school }}</strong></td>
+        </tr>
+      </table>
+
+      {% if student.medical_note %}
+      <div class="alert alert-danger small text-start mt-2">
+        <i class="bi bi-heart-pulse me-1"></i>
+        <strong>Medical Note:</strong> {{ student.medical_note }}
+      </div>
+      {% endif %}
+
+      <div class="d-grid gap-2 mt-3 no-print">
+        <a href="{% url 'student_update' student.pk %}" class="btn btn-warning btn-sm">
+          <i class="bi bi-pencil me-1"></i> Edit Student
+        </a>
+        <a href="{% url 'student_list' %}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Duty History -->
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header fw-bold py-3">
+        <i class="bi bi-clock-history me-2"></i>Duty History
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Term</th>
+              <th>Rotation</th>
+              <th>Duty Area</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for h in student.duty_history.all %}
+            <tr>
+              <td>{{ h.term.name }}</td>
+              <td><span class="badge bg-warning text-dark">{{ h.rotation }}</span></td>
+              <td><strong>{{ h.duty_area.label }}</strong> — {{ h.duty_area.name }}</td>
+              <td class="text-muted small">{{ h.created_at|date:"d M Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center text-muted py-4">
+                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                No duty history yet.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Class History -->
+    <div class="card mt-4">
+      <div class="card-header fw-bold py-3">
+        <i class="bi bi-arrow-up-circle me-2"></i>Class & Dorm History
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>From Class</th>
+              <th>To Class</th>
+              <th>From Dorm</th>
+              <th>To Dorm</th>
+              <th>Changed By</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for h in history %}
+            <tr>
+              <td class="small">{{ h.changed_at|date:"d M Y" }}</td>
+              <td>{{ h.old_class|default:"—" }}</td>
+              <td><strong>{{ h.new_class|default:"—" }}</strong></td>
+              <td>{{ h.old_dorm|default:"—" }}</td>
+              <td><strong>{{ h.new_dorm|default:"—" }}</strong></td>
+              <td class="text-muted small">{{ h.changed_by }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted py-3">
+                No class changes recorded.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

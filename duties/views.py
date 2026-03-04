@@ -48,31 +48,11 @@ def duty_area_update(request, pk):
 # ── AUTO ALLOCATE ─────────────────────────────────────────
 @login_required
 def allocate_view(request):
-    school = get_school(request)
-    term   = Term.objects.filter(school=school, is_current=True).first()
+    # Allow both admins and prefects
+    if request.user.role not in ['admin', 'prefect', 'superadmin']:
+        messages.error(request, "Access denied.")
+        return redirect('dashboard')
 
-    if not term:
-        messages.error(request, "No active term found. Please set a current term.")
-        return redirect('duty_area_list')
-
-    if request.method == 'POST':
-        rotation = int(request.POST.get('rotation', 1))
-        summary  = allocate_duties(school, term, rotation, request.user)
-        return render(request, 'duties/allocation_summary.html', {
-            'summary': summary,
-            'term': term,
-            'rotation': rotation,
-        })
-
-    # GET — show allocation form
-    last_rotation = DutyAssignment.objects.filter(
-        school=school, term=term
-    ).order_by('-rotation').values_list('rotation', flat=True).first() or 0
-
-    return render(request, 'duties/allocate.html', {
-        'term': term,
-        'next_rotation': last_rotation + 1,
-    })
 
 
 # ── MANUAL ASSIGN ─────────────────────────────────────────

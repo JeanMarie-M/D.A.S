@@ -1,0 +1,55 @@
+{% extends 'wizard/base_wizard.html' %}
+{% block wizard_content %}
+
+<div class="wizard-card-header">
+  <div class="step-badge">Step 4 of 6</div>
+  <h4><i class="bi bi-house me-2"></i>Add Dorms</h4>
+  <p>Add dormitories e.g. Kibaki Dorm, Uhuru Dorm.</p>
+</div>
+
+<div class="wizard-card-body">
+  <div class="row g-4">
+    <div class="col-md-6">
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+          <div class="text-danger small">{{ field.errors }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="bi bi-plus me-1"></i> Add Dorm
+        </button>
+      </form>
+    </div>
+    <div class="col-md-6">
+      <h6 class="fw-bold mb-3">Added Dorms</h6>
+      <div class="added-list">
+        {% for d in existing %}
+        <div class="added-item">
+          <i class="bi bi-check-circle-fill"></i>{{ d.name }}
+        </div>
+        {% empty %}
+        <div class="text-muted small">No dorms added yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wizard-footer">
+  <a href="{% url 'wizard_classes' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i> Back
+  </a>
+  {% if existing %}
+  <a href="{% url 'wizard_dorms' %}?next=1" class="btn btn-primary">
+    Next: Duty Areas <i class="bi bi-arrow-right ms-1"></i>
+  </a>
+  {% endif %}
+</div>
+
+{% endblock %}

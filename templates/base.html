@@ -13,6 +13,7 @@
   <style>
     body { background: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
 
+    /* ── SIDEBAR ───────────────────────────── */
     .sidebar {
       min-height: 100vh;
       background: #1a1a2e;
@@ -20,45 +21,206 @@
       width: 240px;
       position: fixed;
       top: 0; left: 0;
+      bottom: 0;
       padding-top: 20px;
       z-index: 100;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      transition: width 0.25s ease;
     }
+    .sidebar.collapsed {
+      width: 60px;
+    }
+
+    /* Scrollbar styling */
+    .sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .sidebar::-webkit-scrollbar-track {
+      background: #1a1a2e;
+    }
+    .sidebar::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: #e2b714;
+    }
+
+    /* Brand */
     .sidebar .brand {
       font-size: 1.1rem;
       font-weight: 700;
       color: #e2b714;
-      padding: 0 20px 20px;
+      padding: 0 20px 15px;
       border-bottom: 1px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      white-space: nowrap;
     }
+    .sidebar.collapsed .brand {
+      justify-content: center;
+      padding: 0 0 15px;
+    }
+    .brand-text {
+      transition: opacity 0.2s ease;
+    }
+    .sidebar.collapsed .brand-text {
+      display: none;
+    }
+
+    /* Toggle button */
+    .toggle-btn {
+      background: none;
+      border: none;
+      color: #e2b714;
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 0;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .toggle-btn:hover { color: white; }
+
+    /* School name */
     .sidebar .school-name {
       font-size: 0.75rem;
       color: #aaa;
       padding: 8px 20px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: opacity 0.2s;
     }
-    .sidebar a {
-      display: block;
-      color: #ccc;
-      text-decoration: none;
-      padding: 10px 20px;
-      font-size: 0.9rem;
-      transition: all 0.2s;
+    .sidebar.collapsed .school-name {
+      display: none;
     }
-    .sidebar a:hover, .sidebar a.active {
-      background: #e2b714;
-      color: #1a1a2e;
-      font-weight: 600;
-    }
+
+    /* Nav section headers */
     .sidebar .nav-section {
       font-size: 0.7rem;
       color: #666;
       padding: 15px 20px 5px;
       text-transform: uppercase;
       letter-spacing: 1px;
+      white-space: nowrap;
+      transition: opacity 0.2s;
     }
+    .sidebar.collapsed .nav-section {
+      padding: 15px 0 5px;
+      text-align: center;
+      font-size: 0.55rem;
+      letter-spacing: 0;
+    }
+
+    /* Nav links */
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      color: #ccc;
+      text-decoration: none;
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      transition: background 0.2s, color 0.2s;
+      white-space: nowrap;
+    }
+    .sidebar a:hover {
+      background: #e2b714;
+      color: #1a1a2e;
+      font-weight: 600;
+    }
+    .sidebar a.active {
+      background: #e2b714;
+      color: #1a1a2e;
+      font-weight: 700;
+    }
+    .sidebar a i {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      width: 20px;
+      text-align: center;
+    }
+    .sidebar.collapsed a {
+      justify-content: center;
+      padding: 10px 0;
+    }
+    .sidebar.collapsed a i {
+      margin: 0 !important;
+      width: auto;
+    }
+
+    /* Link text label */
+    .nav-label {
+      margin-left: 10px;
+      transition: opacity 0.2s;
+    }
+    .sidebar.collapsed .nav-label {
+      display: none;
+    }
+
+    /* Tooltip on collapsed */
+    .sidebar.collapsed a {
+      position: relative;
+    }
+    .sidebar.collapsed a:hover::after {
+      content: attr(data-title);
+      position: absolute;
+      left: 65px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #333;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    /* Logout button styled as sidebar link */
+    .sidebar .logout-btn {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      background: none;
+      border: none;
+      color: #ccc;
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-align: left;
+      white-space: nowrap;
+      transition: background 0.2s, color 0.2s;
+    }
+    .sidebar .logout-btn:hover {
+      background: #e2b714;
+      color: #1a1a2e;
+      font-weight: 600;
+    }
+    .sidebar.collapsed .logout-btn {
+      justify-content: center;
+      padding: 10px 0;
+    }
+    .sidebar.collapsed .logout-btn i {
+      margin: 0 !important;
+      width: auto;
+    }
+    .sidebar.collapsed .logout-btn .nav-label {
+      display: none;
+    }
+
+    /* ── MAIN CONTENT ──────────────────────── */
     .main-content {
       margin-left: 240px;
       padding: 0;
+      transition: margin-left 0.25s ease;
     }
+    .main-content.expanded {
+      margin-left: 60px;
+    }
+
     .topbar {
       background: white;
       border-bottom: 1px solid #e0e0e0;
@@ -66,6 +228,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 99;
     }
     .topbar .page-title {
       font-weight: 600;
@@ -74,6 +239,7 @@
     }
     .content-area { padding: 30px; }
 
+    /* ── CARDS & COMPONENTS ────────────────── */
     .stat-card {
       background: white;
       border-radius: 10px;
@@ -107,6 +273,7 @@
     .btn-warning { color: #1a1a2e; }
     .table th { background: #1a1a2e; color: white; }
 
+    /* ── PRINT ─────────────────────────────── */
     @media print {
       .sidebar, .topbar, .no-print { display: none !important; }
       .main-content { margin-left: 0 !important; }
@@ -118,93 +285,211 @@
 </head>
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
+<!-- ══ SIDEBAR ══════════════════════════════════════════ -->
+<div class="sidebar" id="sidebar">
+
+  <!-- Brand + Toggle -->
   <div class="brand">
-    <i class="bi bi-clipboard2-check"></i> DAS
-  </div>
-  <div class="school-name">
-    {{ request.user.school }}
+    <span class="brand-text">
+      <i class="bi bi-clipboard2-check"></i> DAS
+    </span>
+    <button class="toggle-btn" id="toggleBtn" title="Toggle Sidebar">
+      <i class="bi bi-layout-sidebar-reverse" id="toggleIcon"></i>
+    </button>
   </div>
 
+  <div class="school-name">{{ request.user.school }}</div>
+
+  <!-- MAIN -->
   <div class="nav-section">Main</div>
-  <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-    <i class="bi bi-speedometer2 me-2"></i> Dashboard
+  <a href="{% url 'dashboard' %}"
+     data-title="Dashboard"
+     class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+    <i class="bi bi-speedometer2"></i>
+    <span class="nav-label">Dashboard</span>
   </a>
 
+  <!-- STUDENTS -->
   <div class="nav-section">Students</div>
-<a href="{% url 'student_list' %}" class="{% if 'student' in request.resolver_match.url_name %}active{% endif %}">
-  <i class="bi bi-people me-2"></i> All Students
-</a>
-<a href="{% url 'student_create' %}">
-  <i class="bi bi-person-plus me-2"></i> Add Student
-</a>
-<a href="{% url 'student_import' %}">
-  <i class="bi bi-upload me-2"></i> Import Students
-</a>
-<a href="{% url 'student_bulk_delete' %}">
-  <i class="bi bi-trash me-2"></i> Bulk Delete
-</a>
+  <a href="{% url 'student_list' %}"
+     data-title="All Students"
+     class="{% if request.resolver_match.url_name == 'student_list' %}active{% endif %}">
+    <i class="bi bi-people"></i>
+    <span class="nav-label">All Students</span>
+  </a>
+  <a href="{% url 'student_create' %}"
+     data-title="Add Student"
+     class="{% if request.resolver_match.url_name == 'student_create' %}active{% endif %}">
+    <i class="bi bi-person-plus"></i>
+    <span class="nav-label">Add Student</span>
+  </a>
+  <a href="{% url 'student_import' %}"
+     data-title="Import Students"
+     class="{% if request.resolver_match.url_name == 'student_import' %}active{% endif %}">
+    <i class="bi bi-upload"></i>
+    <span class="nav-label">Import Students</span>
+  </a>
+  <a href="{% url 'student_bulk_delete' %}"
+     data-title="Bulk Delete"
+     class="{% if request.resolver_match.url_name == 'student_bulk_delete' %}active{% endif %}">
+    <i class="bi bi-trash"></i>
+    <span class="nav-label">Bulk Delete</span>
+  </a>
 
+  <!-- DUTIES -->
   <div class="nav-section">Duties</div>
-  <a href="{% url 'duty_area_list' %}" class="{% if 'duty_area' in request.resolver_match.url_name %}active{% endif %}">
-    <i class="bi bi-map me-2"></i> Duty Areas
+  <a href="{% url 'duty_area_list' %}"
+     data-title="Duty Areas"
+     class="{% if request.resolver_match.url_name == 'duty_area_list' %}active{% endif %}">
+    <i class="bi bi-map"></i>
+    <span class="nav-label">Duty Areas</span>
   </a>
-  <a href="{% url 'allocate' %}" class="{% if request.resolver_match.url_name == 'allocate' %}active{% endif %}">
-    <i class="bi bi-lightning me-2"></i> Allocate Duties
+  <a href="{% url 'allocate' %}"
+     data-title="Allocate Duties"
+     class="{% if request.resolver_match.url_name == 'allocate' %}active{% endif %}">
+    <i class="bi bi-lightning"></i>
+    <span class="nav-label">Allocate Duties</span>
   </a>
-  <a href="{% url 'manual_assign' %}">
-    <i class="bi bi-pencil-square me-2"></i> Manual Assign
+  <a href="{% url 'manual_assign' %}"
+     data-title="Manual Assign"
+     class="{% if request.resolver_match.url_name == 'manual_assign' %}active{% endif %}">
+    <i class="bi bi-pencil-square"></i>
+    <span class="nav-label">Manual Assign</span>
   </a>
-  <a href="{% url 'swap_list' %}" class="{% if 'swap' in request.resolver_match.url_name %}active{% endif %}">
-    <i class="bi bi-arrow-left-right me-2"></i> Swap Requests
+  <a href="{% url 'swap_list' %}"
+     data-title="Swap Requests"
+     class="{% if request.resolver_match.url_name == 'swap_list' %}active{% endif %}">
+    <i class="bi bi-arrow-left-right"></i>
+    <span class="nav-label">Swap Requests</span>
   </a>
 
+  <!-- REPORTS -->
   <div class="nav-section">Reports</div>
-  <a href="{% url 'report_full_school' %}">
-    <i class="bi bi-file-earmark-text me-2"></i> Full School Roster
+  <a href="{% url 'report_full_school' %}"
+     data-title="Full School Roster"
+     class="{% if request.resolver_match.url_name == 'report_full_school' %}active{% endif %}">
+    <i class="bi bi-file-earmark-text"></i>
+    <span class="nav-label">Full School Roster</span>
   </a>
-  <a href="{% url 'report_by_class' %}">
-    <i class="bi bi-journal-text me-2"></i> By Class
+  <a href="{% url 'report_by_class' %}"
+     data-title="By Class"
+     class="{% if request.resolver_match.url_name == 'report_by_class' %}active{% endif %}">
+    <i class="bi bi-journal-text"></i>
+    <span class="nav-label">By Class</span>
   </a>
-  <a href="{% url 'report_by_dorm' %}">
-    <i class="bi bi-house me-2"></i> By Dorm
+  <a href="{% url 'report_by_dorm' %}"
+     data-title="By Dorm"
+     class="{% if request.resolver_match.url_name == 'report_by_dorm' %}active{% endif %}">
+    <i class="bi bi-house"></i>
+    <span class="nav-label">By Dorm</span>
   </a>
-  <a href="{% url 'report_by_area' %}">
-    <i class="bi bi-geo-alt me-2"></i> By Duty Area
+  <a href="{% url 'report_by_area' %}"
+     data-title="By Duty Area"
+     class="{% if request.resolver_match.url_name == 'report_by_area' %}active{% endif %}">
+    <i class="bi bi-geo-alt"></i>
+    <span class="nav-label">By Duty Area</span>
   </a>
 
+  <!-- ACCOUNT -->
+
+ <!-- ACCOUNT -->
   <div class="nav-section">Account</div>
-  <a href="{% url 'logout' %}">
-    <i class="bi bi-box-arrow-left me-2"></i> Logout
+  <a href="{% url 'school_profile' %}"
+     data-title="School Profile"
+     class="{% if request.resolver_match.url_name == 'school_profile' %}active{% endif %}">
+    <i class="bi bi-building"></i>
+    <span class="nav-label">School Profile</span>
   </a>
-</div>
+  <a href="{% url 'term_list' %}"
+     data-title="Terms"
+     class="{% if 'term' in request.resolver_match.url_name %}active{% endif %}">
+    <i class="bi bi-calendar3"></i>
+    <span class="nav-label">Terms</span>
+  </a>
+  {% if request.user.is_school_admin %}
+  <a href="{% url 'user_list' %}"
+     data-title="Users"
+     class="{% if 'user' in request.resolver_match.url_name %}active{% endif %}">
+    <i class="bi bi-people"></i>
+    <span class="nav-label">Users</span>
+  </a>
+  {% endif %}
+  <a href="{% url 'change_password' %}"
+     data-title="Change Password"
+     class="{% if request.resolver_match.url_name == 'change_password' %}active{% endif %}">
+    <i class="bi bi-shield-lock"></i>
+    <span class="nav-label">Change Password</span>
+  </a>
+  <form method="post" action="{% url 'logout' %}" style="margin:0;padding:0;">
+    {% csrf_token %}
+    <button type="submit" class="logout-btn" data-title="Logout">
+      <i class="bi bi-box-arrow-left"
+         style="width:20px;text-align:center;font-size:1.1rem;"></i>
+      <span class="nav-label">Logout</span>
+    </button>
+  </form>
+  </div>
+<!-- ══ END SIDEBAR ══════════════════════════════════════ -->
 
-<!-- MAIN CONTENT -->
-<div class="main-content">
+
+<!-- ══ MAIN CONTENT ═════════════════════════════════════ -->
+<div class="main-content" id="mainContent">
+
   <div class="topbar">
     <span class="page-title">{% block page_title %}Dashboard{% endblock %}</span>
     <span class="text-muted small">
       <i class="bi bi-person-circle me-1"></i>
       {{ request.user.get_full_name|default:request.user.username }}
-      <span class="badge bg-warning text-dark ms-1">{{ request.user.get_role_display }}</span>
+      <span class="badge bg-warning text-dark ms-1">
+        {{ request.user.get_role_display }}
+      </span>
     </span>
   </div>
 
   <div class="content-area">
-    <!-- Messages -->
-    {% for msg in messages %}
+
+    <!-- Flash Messages -->
+   {% for msg in messages %}
     <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
-      {{ msg }}
+      {{ msg|safe }}
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     {% endfor %}
 
     {% block content %}{% endblock %}
+
   </div>
 </div>
+<!-- ══ END MAIN CONTENT ══════════════════════════════════ -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  const sidebar     = document.getElementById('sidebar');
+  const mainContent = document.getElementById('mainContent');
+  const toggleIcon  = document.getElementById('toggleIcon');
+
+  // Restore state from localStorage
+  if (localStorage.getItem('sidebarCollapsed') === 'true') {
+    sidebar.classList.add('collapsed');
+    mainContent.classList.add('expanded');
+    toggleIcon.className = 'bi bi-layout-sidebar';
+  }
+
+  document.getElementById('toggleBtn').addEventListener('click', function () {
+    const isCollapsed = sidebar.classList.toggle('collapsed');
+    mainContent.classList.toggle('expanded', isCollapsed);
+
+    // Switch icon
+    toggleIcon.className = isCollapsed
+      ? 'bi bi-layout-sidebar'
+      : 'bi bi-layout-sidebar-reverse';
+
+    // Save state
+    localStorage.setItem('sidebarCollapsed', isCollapsed);
+  });
+</script>
+
 {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -18,6 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth.decorators import user_passes_test
+
+# Restrict admin to superadmin only
+admin.site.login = user_passes_test(
+    lambda u: u.is_active and u.is_staff and hasattr(u, 'role') and u.role == 'superadmin',
+    login_url='/login/'
+)(admin.site.login)
 
 urlpatterns = [
     path('admin/',    admin.site.urls),
@@ -25,4 +32,5 @@ urlpatterns = [
     path('students/', include('students.urls')),
     path('duties/',   include('duties.urls')),
     path('reports/',  include('reports.urls')),
+    path('schools/',  include('schools.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

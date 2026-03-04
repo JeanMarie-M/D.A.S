@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card p-4">
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">First Name</label>
+          <input type="text" name="first_name" class="form-control"
+                 value="{{ edit_user.first_name|default:'' }}" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Last Name</label>
+          <input type="text" name="last_name" class="form-control"
+                 value="{{ edit_user.last_name|default:'' }}" required>
+        </div>
+
+        {% if not edit_user %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Username</label>
+          <input type="text" name="username" class="form-control" required>
+        </div>
+        {% endif %}
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Email</label>
+          <input type="email" name="email" class="form-control"
+                 value="{{ edit_user.email|default:'' }}">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Role</label>
+          <select name="role" class="form-select">
+            <option value="admin"
+              {% if edit_user.role == 'admin' %}selected{% endif %}>
+              Admin
+            </option>
+            <option value="prefect"
+              {% if edit_user.role == 'prefect' or not edit_user %}selected{% endif %}>
+              Prefect
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">
+            Password
+            {% if edit_user %}
+            <span class="text-muted fw-normal small">(leave blank to keep current)</span>
+            {% endif %}
+          </label>
+          <input type="password" name="password" class="form-control"
+                 {% if not edit_user %}required{% endif %}>
+        </div>
+
+        {% if not edit_user %}
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Confirm Password</label>
+          <input type="password" name="password2" class="form-control" required>
+        </div>
+        {% endif %}
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save me-1"></i> Save User
+          </button>
+          <a href="{% url 'user_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-x me-1"></i> Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

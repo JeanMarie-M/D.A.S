@@ -1,0 +1,1 @@
+web: gunicorn das_core.wsgi --log-file -
