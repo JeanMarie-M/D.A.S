@@ -146,17 +146,16 @@ def allocate_view(request):
     if request.method == 'POST':
         rotation = int(request.POST.get('rotation', 1))
         try:
-            result = allocate_duties(school, current_term, rotation)
+            result = allocate_duties(school, current_term, rotation, assigned_by=request.user)
+            assigned = result.get('assigned', [])
+            count = len(assigned) if isinstance(assigned, list) else assigned
             messages.success(
                 request,
-                f"✅ Allocation complete! "
-                f"{result.get('assigned', 0)} students assigned across "
-                f"{result.get('areas', 0)} duty areas."
+                f" Allocation complete! {count} students assigned."
             )
         except Exception as e:
             messages.error(request, f"Allocation failed: {e}")
         return redirect('allocation_summary')
-
     # GET — calculate next rotation number
     from students.models import Student
     eligible     = Student.objects.filter(school=school, status='active').count()
@@ -183,21 +182,41 @@ def allocation_summary(request):
         messages.error(request, "No active term found.")
         return redirect('dashboard')
 
-    last = DutyAssignment.objects.filter(
-        school=school, term=current_term
-    ).order_by('-rotation').first()
-    rotation = last.rotation if last else 1
+    # Get selected rotation or default to latest
+    rotation = request.GET.get('rotation')
+    if rotation:
+        rotation = int(rotation)
+    else:
+        last = DutyAssignment.objects.filter(
+            school=school, term=current_term
+        ).order_by('-rotation').first()
+        rotation = last.rotation if last else 1
 
     assignments = DutyAssignment.objects.filter(
-        school=school, term=current_term, rotation=rotation
+        school=school,
+        term=current_term,
+        rotation=rotation,
     ).select_related('student', 'duty_area').order_by('duty_area__label')
 
-    return render(request, 'duties/allocation_summary.html', {
-        'assignments':    assignments,
-        'current_term':   current_term,
-        'rotation':       rotation,
-    })
+    # Get all rotations for this term for the dropdown
+    rotations = DutyAssignment.objects.filter(
+        school=school, term=current_term
+    ).values_list('rotation', flat=True).distinct().order_by('rotation')
 
+    # Group by duty area
+    from collections import defaultdict
+    grouped = defaultdict(list)
+    for a in assignments:
+        grouped[a.duty_area].append(a.student)
+
+    return render(request, 'duties/allocation_summary.html', {
+        'assignments':  assignments,
+        'grouped':      dict(grouped),
+        'current_term': current_term,
+        'rotation':     rotation,
+        'rotations':    rotations,
+        'total':        assignments.count(),
+    })
 
 # ── MANUAL ASSIGN ─────────────────────────────────────────
 @login_required
