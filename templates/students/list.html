@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Students{% endblock %}
+{% block page_title %}Students{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center py-3">
+    <span class="fw-bold">All Students</span>
+    <a href="{% url 'student_create' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-person-plus me-1"></i> Add Student
+    </a>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="card-body border-bottom pb-3">
+    <form method="get" class="row g-2">
+      <div class="col-md-4">
+        <input type="text" name="q" class="form-control form-control-sm"
+               placeholder="Search name or admission no..." value="{{ request.GET.q }}">
+      </div>
+      <div class="col-md-3">
+        <select name="status" class="form-select form-select-sm">
+          <option value="">All Statuses</option>
+          <option value="active"   {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+          <option value="prefect"  {% if request.GET.status == 'prefect' %}selected{% endif %}>Prefect</option>
+          <option value="medical"  {% if request.GET.status == 'medical' %}selected{% endif %}>Medical</option>
+          <option value="absent"   {% if request.GET.status == 'absent' %}selected{% endif %}>Absent</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary btn-sm w-100">
+          <i class="bi bi-search me-1"></i>Filter
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Adm No</th>
+          <th>Full Name</th>
+          <th>Class</th>
+          <th>Dorm</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+        <tr>
+          <td><code>{{ student.admission_number }}</code></td>
+          <td>{{ student.get_full_name }}</td>
+          <td>{{ student.current_class }}</td>
+          <td>{{ student.dorm }}</td>
+          <td>
+            {% if student.status == 'active' %}
+              <span class="badge bg-success">Active</span>
+            {% elif student.status == 'prefect' %}
+              <span class="badge bg-warning text-dark">Prefect</span>
+            {% elif student.status == 'medical' %}
+              <span class="badge bg-danger">Medical</span>
+            {% elif student.status == 'absent' %}
+              <span class="badge bg-secondary">Absent</span>
+            {% else %}
+              <span class="badge bg-dark">Inactive</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'student_detail' student.pk %}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-eye"></i>
+            </a>
+            <a href="{% url 'student_update' student.pk %}" class="btn btn-sm btn-outline-warning">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <a href="{% url 'student_delete' student.pk %}" class="btn btn-sm btn-outline-danger">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">
+            <i class="bi bi-inbox fs-3 d-block mb-2"></i>No students found.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Bulk Delete Students{% endblock %}
+{% block page_title %}Bulk Delete Students{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header bg-danger text-white py-3">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    <strong>Bulk Delete — Admin Only</strong>
+  </div>
+
+  <div class="card-body">
+    <div class="alert alert-warning">
+      <i class="bi bi-shield-exclamation me-2"></i>
+      <strong>Warning:</strong> Selected students will be <strong>deactivated</strong>
+      (not permanently deleted). This action is logged.
+    </div>
+
+    <form method="post" id="bulkDeleteForm">
+      {% csrf_token %}
+
+      <!-- Student Table -->
+      <div class="table-responsive mb-4" style="max-height: 400px; overflow-y:auto;">
+        <table class="table table-bordered table-hover table-sm">
+          <thead>
+            <tr>
+              <th style="width:40px;">
+                <input type="checkbox" id="selectAll" title="Select All">
+              </th>
+              <th>Adm No</th>
+              <th>Full Name</th>
+              <th>Class</th>
+              <th>Dorm</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for student in students %}
+            <tr>
+              <td>
+                <input type="checkbox" name="student_ids"
+                       value="{{ student.pk }}" class="student-check">
+              </td>
+              <td><code>{{ student.admission_number }}</code></td>
+              <td>{{ student.get_full_name }}</td>
+              <td>{{ student.current_class }}</td>
+              <td>{{ student.dorm }}</td>
+              <td>
+                {% if student.status == 'active' %}
+                  <span class="badge bg-success">Active</span>
+                {% else %}
+                  <span class="badge bg-secondary">{{ student.status }}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted">No students found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Reason -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">
+          Reason for Deletion <span class="text-danger">*</span>
+        </label>
+        <textarea name="reason" class="form-control" rows="2"
+                  placeholder="e.g. End of year cleanup, students left school..."
+                  required></textarea>
+      </div>
+
+      <!-- Confirmation -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold">
+          Type <span class="text-danger fw-bold">DELETE</span> to confirm
+        </label>
+        <input type="text" name="confirm_text" class="form-control"
+               placeholder="Type DELETE here" required autocomplete="off">
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-danger">
+          <i class="bi bi-trash me-2"></i>Confirm Bulk Delete
+        </button>
+        <a href="{% url 'student_list' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-x me-1"></i>Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Select all checkbox
+  document.getElementById('selectAll').addEventListener('change', function () {
+    document.querySelectorAll('.student-check').forEach(cb => cb.checked = this.checked);
+  });
+</script>
+{% endblock %}>

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Allocation Summary{% endblock %}
+{% block page_title %}Allocation Summary{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="stat-card" style="border-color:#28a745">
+      <div class="number text-success">{{ summary.assigned|length }}</div>
+      <div class="label">Assignments Made</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card" style="border-color:#ffc107">
+      <div class="number text-warning">{{ summary.warnings|length }}</div>
+      <div class="label">Warnings</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card" style="border-color:#dc3545">
+      <div class="number text-danger">{{ summary.unassigned_areas|length }}</div>
+      <div class="label">Unassigned Areas</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mt-2">
+  <!-- Assignments -->
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header fw-bold">
+        <i class="bi bi-check-circle text-success me-2"></i>Assignments ({{ summary.assigned|length }})
+      </div>
+      <div class="card-body p-0" style="max-height:400px; overflow-y:auto">
+        <ul class="list-group list-group-flush">
+          {% for item in summary.assigned %}
+          <li class="list-group-item small">{{ item }}</li>
+          {% empty %}
+          <li class="list-group-item text-muted">No assignments made.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Warnings -->
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header fw-bold">
+        <i class="bi bi-exclamation-triangle text-warning me-2"></i>Warnings
+      </div>
+      <div class="card-body p-0" style="max-height:400px; overflow-y:auto">
+        <ul class="list-group list-group-flush">
+          {% for w in summary.warnings %}
+          <li class="list-group-item small text-warning">{{ w }}</li>
+          {% empty %}
+          <li class="list-group-item text-muted">No warnings.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mt-4 d-flex gap-2 no-print">
+  <a href="{% url 'report_full_school' %}" class="btn btn-primary">
+    <i class="bi bi-file-earmark-text me-2"></i>View Full Roster
+  </a>
+  <a href="{% url 'allocate' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-2"></i>Back
+  </a>
+</div>
+{% endblock %}

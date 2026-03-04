@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Report By Dorm{% endblock %}
+{% block page_title %}Duty Roster — By Dorm{% endblock %}
+
+{% block content %}
+<div class="card mb-4 no-print">
+  <div class="card-body">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Select Dorm</label>
+        <select name="dorm_id" class="form-select">
+          <option value="">-- Select Dorm --</option>
+          {% for d in dorms %}
+          <option value="{{ d.pk }}" {% if selected_dorm == d.pk|stringformat:"s" %}selected{% endif %}>
+            {{ d.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary w-100">
+          <i class="bi bi-search me-1"></i> View
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if roster %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center py-3">
+    <span class="fw-bold">
+      <i class="bi bi-house me-2"></i>Dorm Duty Roster
+    </span>
+    <button onclick="window.print()" class="btn btn-primary btn-sm no-print">
+      <i class="bi bi-printer me-1"></i> Print
+    </button>
+  </div>
+
+  <div class="text-center py-3 d-none d-print-block">
+    <h4 class="fw-bold">{{ request.user.school }}</h4>
+    <p class="mb-0">Dorm Duty Roster — {{ term.name }}</p>
+    <hr>
+  </div>
+
+  <div class="card-body p-0">
+    <table class="table table-bordered mb-0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Adm No</th>
+          <th>Full Name</th>
+          <th>Class</th>
+          <th>Duty Area</th>
+          <th>Rotation</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in roster %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td><code>{{ r.student.admission_number }}</code></td>
+          <td>{{ r.student.get_full_name }}</td>
+          <td>{{ r.student.current_class }}</td>
+          <td><strong>{{ r.duty_area.label }}</strong> — {{ r.duty_area.name }}</td>
+          <td>{{ r.rotation }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card-footer d-none d-print-block text-center small text-muted">
+    Printed on: {% now "d M Y H:i" %} &nbsp;|&nbsp; Duty Allocation System
+  </div>
+</div>
+
+<div class="row mt-5 d-none d-print-block">
+  <div class="col-6 text-center">
+    <div style="border-top: 1px solid #000; width: 200px; margin: 0 auto;"></div>
+    <p class="mt-1 small">Head Prefect Signature</p>
+  </div>
+  <div class="col-6 text-center">
+    <div style="border-top: 1px solid #000; width: 200px; margin: 0 auto;"></div>
+    <p class="mt-1 small">Teacher In Charge Signature</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

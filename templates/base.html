@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Duty Allocation System{% endblock %}</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body { background: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+
+    .sidebar {
+      min-height: 100vh;
+      background: #1a1a2e;
+      color: white;
+      width: 240px;
+      position: fixed;
+      top: 0; left: 0;
+      padding-top: 20px;
+      z-index: 100;
+    }
+    .sidebar .brand {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #e2b714;
+      padding: 0 20px 20px;
+      border-bottom: 1px solid #333;
+    }
+    .sidebar .school-name {
+      font-size: 0.75rem;
+      color: #aaa;
+      padding: 8px 20px;
+    }
+    .sidebar a {
+      display: block;
+      color: #ccc;
+      text-decoration: none;
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background: #e2b714;
+      color: #1a1a2e;
+      font-weight: 600;
+    }
+    .sidebar .nav-section {
+      font-size: 0.7rem;
+      color: #666;
+      padding: 15px 20px 5px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .main-content {
+      margin-left: 240px;
+      padding: 0;
+    }
+    .topbar {
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 12px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .topbar .page-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #1a1a2e;
+    }
+    .content-area { padding: 30px; }
+
+    .stat-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      border-left: 4px solid #e2b714;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .stat-card .number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+    .stat-card .label {
+      font-size: 0.85rem;
+      color: #888;
+    }
+    .card {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .btn-primary {
+      background: #1a1a2e;
+      border-color: #1a1a2e;
+    }
+    .btn-primary:hover {
+      background: #e2b714;
+      border-color: #e2b714;
+      color: #1a1a2e;
+    }
+    .btn-warning { color: #1a1a2e; }
+    .table th { background: #1a1a2e; color: white; }
+
+    @media print {
+      .sidebar, .topbar, .no-print { display: none !important; }
+      .main-content { margin-left: 0 !important; }
+      .content-area { padding: 0 !important; }
+    }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="brand">
+    <i class="bi bi-clipboard2-check"></i> DAS
+  </div>
+  <div class="school-name">
+    {{ request.user.school }}
+  </div>
+
+  <div class="nav-section">Main</div>
+  <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+    <i class="bi bi-speedometer2 me-2"></i> Dashboard
+  </a>
+
+  <div class="nav-section">Students</div>
+<a href="{% url 'student_list' %}" class="{% if 'student' in request.resolver_match.url_name %}active{% endif %}">
+  <i class="bi bi-people me-2"></i> All Students
+</a>
+<a href="{% url 'student_create' %}">
+  <i class="bi bi-person-plus me-2"></i> Add Student
+</a>
+<a href="{% url 'student_import' %}">
+  <i class="bi bi-upload me-2"></i> Import Students
+</a>
+<a href="{% url 'student_bulk_delete' %}">
+  <i class="bi bi-trash me-2"></i> Bulk Delete
+</a>
+
+  <div class="nav-section">Duties</div>
+  <a href="{% url 'duty_area_list' %}" class="{% if 'duty_area' in request.resolver_match.url_name %}active{% endif %}">
+    <i class="bi bi-map me-2"></i> Duty Areas
+  </a>
+  <a href="{% url 'allocate' %}" class="{% if request.resolver_match.url_name == 'allocate' %}active{% endif %}">
+    <i class="bi bi-lightning me-2"></i> Allocate Duties
+  </a>
+  <a href="{% url 'manual_assign' %}">
+    <i class="bi bi-pencil-square me-2"></i> Manual Assign
+  </a>
+  <a href="{% url 'swap_list' %}" class="{% if 'swap' in request.resolver_match.url_name %}active{% endif %}">
+    <i class="bi bi-arrow-left-right me-2"></i> Swap Requests
+  </a>
+
+  <div class="nav-section">Reports</div>
+  <a href="{% url 'report_full_school' %}">
+    <i class="bi bi-file-earmark-text me-2"></i> Full School Roster
+  </a>
+  <a href="{% url 'report_by_class' %}">
+    <i class="bi bi-journal-text me-2"></i> By Class
+  </a>
+  <a href="{% url 'report_by_dorm' %}">
+    <i class="bi bi-house me-2"></i> By Dorm
+  </a>
+  <a href="{% url 'report_by_area' %}">
+    <i class="bi bi-geo-alt me-2"></i> By Duty Area
+  </a>
+
+  <div class="nav-section">Account</div>
+  <a href="{% url 'logout' %}">
+    <i class="bi bi-box-arrow-left me-2"></i> Logout
+  </a>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+  <div class="topbar">
+    <span class="page-title">{% block page_title %}Dashboard{% endblock %}</span>
+    <span class="text-muted small">
+      <i class="bi bi-person-circle me-1"></i>
+      {{ request.user.get_full_name|default:request.user.username }}
+      <span class="badge bg-warning text-dark ms-1">{{ request.user.get_role_display }}</span>
+    </span>
+  </div>
+
+  <div class="content-area">
+    <!-- Messages -->
+    {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+      {{ msg }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

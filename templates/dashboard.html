@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — DAS{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="number">{{ total_students }}</div>
+      <div class="label"><i class="bi bi-people me-1"></i>Total Students</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card" style="border-color:#28a745">
+      <div class="number">{{ eligible_students }}</div>
+      <div class="label"><i class="bi bi-check-circle me-1"></i>Eligible for Duty</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card" style="border-color:#dc3545">
+      <div class="number">{{ exempt_students }}</div>
+      <div class="label"><i class="bi bi-shield-x me-1"></i>Exempted</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card" style="border-color:#0d6efd">
+      <div class="number">{{ duty_areas }}</div>
+      <div class="label"><i class="bi bi-map me-1"></i>Duty Areas</div>
+    </div>
+  </div>
+</div>
+
+<!-- Current Term Info -->
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3"><i class="bi bi-calendar3 me-2"></i>Current Term</h6>
+      {% if current_term %}
+      <table class="table table-sm table-borderless">
+        <tr><td class="text-muted">Term</td><td><strong>{{ current_term.name }}</strong></td></tr>
+        <tr><td class="text-muted">School</td><td>{{ current_term.school }}</td></tr>
+        <tr><td class="text-muted">Start</td><td>{{ current_term.start_date }}</td></tr>
+        <tr><td class="text-muted">End</td><td>{{ current_term.end_date }}</td></tr>
+        <tr><td class="text-muted">Rotation</td><td>
+          <span class="badge bg-warning text-dark">{{ current_term.get_rotation_period_display }}</span>
+        </td></tr>
+      </table>
+      {% else %}
+      <div class="alert alert-warning mb-0">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        No active term set. <a href="/admin/schools/term/">Set one in admin.</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3"><i class="bi bi-lightning me-2"></i>Quick Actions</h6>
+      <div class="d-grid gap-2">
+        <a href="{% url 'allocate' %}" class="btn btn-primary">
+          <i class="bi bi-lightning me-2"></i>Run Duty Allocation
+        </a>
+        <a href="{% url 'student_create' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-person-plus me-2"></i>Add New Student
+        </a>
+        <a href="{% url 'duty_area_create' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-map me-2"></i>Add Duty Area
+        </a>
+        <a href="{% url 'report_full_school' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-printer me-2"></i>Print Full Roster
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
