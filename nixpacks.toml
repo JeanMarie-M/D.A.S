@@ -1,17 +1,8 @@
-[phases.setup]
-nixPkgs = ["python312", "python312Packages.pip"]
-
-[phases.install]
-cmds = [
-  "python3 -m venv /opt/venv",
-  "/opt/venv/bin/pip install -r requirements.txt"
-]
-
 [phases.build]
 cmds = [
-  "/opt/venv/bin/python manage.py collectstatic --noinput",
-  "/opt/venv/bin/python manage.py migrate"
+  "python manage.py collectstatic --noinput",
+  "python manage.py migrate"
 ]
 
 [start]
-cmd = "/opt/venv/bin/gunicorn das_core.wsgi --log-file -"
+cmd = "gunicorn das_core.wsgi --log-file -"
