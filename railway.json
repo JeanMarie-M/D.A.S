@@ -4,8 +4,9 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "gunicorn das_core.wsgi --log-file -",
-    "healthcheckPath": "/login/",
+    "startCommand": "/opt/venv/bin/gunicorn das_core.wsgi:application --bind 0.0.0.0:$PORT --log-file -",
+    "healthcheckPath": "/",
+    "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE"
   }
 }
